@@ -1,0 +1,991 @@
+# ------------------------------------------------------------------------------------ #
+# --      UNCLASSIFIED//FOR OFFICIAL USE ONLY
+# ------------------------------------------------------------------------------------ #
+# -- Title       : IA-860m Cardtest01 qsf
+# -- Project     : IA-860m
+# ------------------------------------------------------------------------------------ #
+# -- Description : QSF for IA-860m standard revision of Cardtest01.
+# ------------------------------------------------------------------------------------ #
+# -- Known Issues and Omissions:
+# -- None
+# ------------------------------------------------------------------------------------ #
+
+set_global_assignment -name TOP_LEVEL_ENTITY cardtest_top
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 23.3.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "16:29:25  JANUARY 30, 2023"
+set_global_assignment -name LAST_QUARTUS_VERSION "25.1.0 Pro Edition"
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name BOARD default
+
+# IP preset files (.qprs)
+set_global_assignment -name IP_SEARCH_PATHS ../ip/presets/**/*
+
+source ia860m_device_bbrev4.tcl
+
+# Assembler settings to generate an rbf
+set_global_assignment -name GENERATE_PROGRAMMING_FILES ON
+set_global_assignment -name CONVERT_PROGRAMMING_FILES_COMMANDS pfg_cmds/pfg_cmds_cardtest01_bbrev4_std.txt
+
+set_global_assignment -name VHDL_FILE ../rtl/pkg/revisions/pkg_revision_bbrev4_std.vhd
+
+# SerialLiteIV 53G IP
+set_global_assignment -name VHDL_FILE ../rtl/pkg/qsfpdd_rates/pkg_xvcr_rate_53g.vhd
+set_global_assignment -name IP_FILE ../ip/serialliteiv_system_pll_53g.ip
+set_global_assignment -name IP_FILE ../ip/serialliteiv_x8_53g.ip
+
+
+source cardtest_common_src.tcl
+
+# Ensure Quartus doesn't promote the HBM Test Resets to Global Signals
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to memu_user_reset_d4 -entity cardtest_top
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to meml_user_reset_d4 -entity cardtest_top
+
+# Logic-Lock the BMC SPI IP closer to the pins
+set_instance_assignment -name PLACE_REGION "X39 Y8 X78 Y15" -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u2
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u2
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u2
+set_instance_assignment -name REGION_NAME bmc_spi_slv -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u2
+set_instance_assignment -name PLACE_REGION "X41 Y8 X80 Y15" -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u5
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u5
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u5
+set_instance_assignment -name REGION_NAME bmc_spi_mst -to u0|skeleton_ia860m_0|skeleton_bmc3_ia860m|skeleton_bmc3_ia860m|bmc_3v0_top_inst|u5
+
+# PLL Constraints
+set_location_assignment IOPLL_X65_Y2_N0 -to {u001_user_clk0_pll|iopll_0|tennm_ph2_iopll} 
+set_location_assignment IOPLL_X13_Y418_N84 -to {u012_user_clk1_pll|iopll_0|tennm_ph2_iopll} 
+set_location_assignment IOPLL_X65_Y2_N84 -to {u13_lvds_gpio|lvds_tst_pll|iopll_0|tennm_ph2_iopll} 
+
+# NoC Routing Constraints.
+
+# NoC General
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u006_upper_noc_clk_ctrl|intel_noc_clock_ctrl_0|pll_inst -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u007_lower_noc_clk_ctrl|intel_noc_clock_ctrl_0|pll_inst -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u006_upper_noc_clk_ctrl|intel_noc_clock_ctrl_0|ssm_inst -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u007_lower_noc_clk_ctrl|intel_noc_clock_ctrl_0|ssm_inst -entity cardtest_top
+
+# Upper NoC/HBM2e
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_ch1_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_ch3_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_ch5_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_ch7_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_ch1_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_ch3_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_ch5_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_ch7_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_ch1_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00008000000 -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_ch3_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00010000000 -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_ch5_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00018000000 -from u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_ch7_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+
+set_location_assignment NOCINITIATOR_X42_Y417_N202 -to {u4_hbm2_upper_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0}
+set_location_assignment NOCINITIATOR_X322_Y417_N202 -to {u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X242_Y417_N202 -to {u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X296_Y417_N202 -to {u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X204_Y417_N202 -to {u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X357_Y417_N204 -to {u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X269_Y417_N202 -to {u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X311_Y417_N202 -to {u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X215_Y417_N202 -to {u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X161_Y417_N202 -to {u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X94_Y417_N202 -to {u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X134_Y417_N202 -to {u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0}
+set_location_assignment NOCINITIATOR_X53_Y417_N202 -to {u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCINITIATOR_X188_Y417_N202 -to {u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0}
+set_location_assignment NOCINITIATOR_X105_Y417_N202 -to {u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0}
+set_location_assignment NOCINITIATOR_X150_Y417_N202 -to {u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0}
+set_location_assignment NOCINITIATOR_X79_Y417_N202 -to {u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+set_location_assignment NOCTARGET_X248_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X221_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X237_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X210_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X258_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X231_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X242_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X215_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X183_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X156_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X167_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X140_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X188_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X161_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X177_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X150_Y417_N200 -to u6_hbm2_upper_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0
+
+set_instance_assignment -name PLACE_REGION "X312 Y387 X329 Y417" -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_0 -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X312 Y387 X329 Y417" -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_0 -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X312 Y387 X329 Y417" -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_0 -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X312 Y387 X329 Y417" -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_0 -to u6_hbm2_upper_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X225 Y387 X242 Y417" -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_1 -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X225 Y387 X242 Y417" -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_1 -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X225 Y387 X242 Y417" -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_1 -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X225 Y387 X242 Y417" -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_1 -to u6_hbm2_upper_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X275 Y387 X292 Y417" -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_2 -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X275 Y387 X292 Y417" -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_2 -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X275 Y387 X292 Y417" -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_2 -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X275 Y387 X292 Y417" -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_2 -to u6_hbm2_upper_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X185 Y387 X202 Y417" -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_3 -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X185 Y387 X202 Y417" -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_3 -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X185 Y387 X202 Y417" -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_3 -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X185 Y387 X202 Y417" -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_3 -to u6_hbm2_upper_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X334 Y387 X351 Y417" -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_4 -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X334 Y387 X351 Y417" -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_4 -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X334 Y387 X351 Y417" -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_4 -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X334 Y387 X351 Y417" -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_4 -to u6_hbm2_upper_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X260 Y387 X277 Y417" -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_5 -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X260 Y387 X277 Y417" -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_5 -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X260 Y387 X277 Y417" -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_5 -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X260 Y387 X277 Y417" -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_5 -to u6_hbm2_upper_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X293 Y387 X310 Y417" -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_6 -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X293 Y387 X310 Y417" -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_6 -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X293 Y387 X310 Y417" -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_6 -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X293 Y387 X310 Y417" -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_6 -to u6_hbm2_upper_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X206 Y387 X223 Y417" -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_7 -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X206 Y387 X223 Y417" -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_7 -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X206 Y387 X223 Y417" -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_7 -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X206 Y387 X223 Y417" -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_7 -to u6_hbm2_upper_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X150 Y387 X167 Y417" -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_8 -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X150 Y387 X167 Y417" -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_8 -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X150 Y387 X167 Y417" -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_8 -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X150 Y387 X167 Y417" -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_8 -to u6_hbm2_upper_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X86 Y387 X103 Y417" -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_9 -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X86 Y387 X103 Y417" -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_9 -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X86 Y387 X103 Y417" -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_9 -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X86 Y387 X103 Y417" -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_9 -to u6_hbm2_upper_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X116 Y387 X133 Y417" -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_10 -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X116 Y387 X133 Y417" -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_10 -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X116 Y387 X133 Y417" -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_10 -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X116 Y387 X133 Y417" -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_10 -to u6_hbm2_upper_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X46 Y387 X63 Y417" -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_11 -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X46 Y387 X63 Y417" -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_11 -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X46 Y387 X63 Y417" -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_11 -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X46 Y387 X63 Y417" -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_11 -to u6_hbm2_upper_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X168 Y387 X185 Y417" -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_12 -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X168 Y387 X185 Y417" -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_12 -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X168 Y387 X185 Y417" -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_12 -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X168 Y387 X185 Y417" -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_12 -to u6_hbm2_upper_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X104 Y387 X121 Y417" -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_13 -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X104 Y387 X121 Y417" -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_13 -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X104 Y387 X121 Y417" -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_13 -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X104 Y387 X121 Y417" -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_13 -to u6_hbm2_upper_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X132 Y387 X149 Y417" -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_14 -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X132 Y387 X149 Y417" -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_14 -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X132 Y387 X149 Y417" -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_14 -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X132 Y387 X149 Y417" -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_14 -to u6_hbm2_upper_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X67 Y387 X84 Y417" -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME upper_noc_init_15 -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X67 Y387 X84 Y417" -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_15 -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X67 Y387 X84 Y417" -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_15 -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X67 Y387 X84 Y417" -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME upper_noc_init_15 -to u6_hbm2_upper_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+# Lower NoC/HBM2e
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_ch1_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_ch3_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_ch5_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_ch7_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP LOWER_HBM -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_ch1_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_ch3_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_ch7_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_ch5_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_ch1_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00008000000 -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_ch3_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00010000000 -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_ch5_sb|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00018000000 -from u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_ch7_sb|target_0.target_lite_inst_0 -entity cardtest_top
+
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 10.08 -from u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 64 -from u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0 -entity cardtest_top
+
+set_location_assignment NOCINITIATOR_X419_Y6_N202 -to {u5_hbm2_lower_status_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0}
+set_location_assignment NOCINITIATOR_X134_Y6_N202 -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X204_Y6_N202 -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X160_Y6_N202 -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X242_Y6_N202 -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X94_Y6_N202 -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X188_Y6_N202 -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X149_Y6_N202 -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X215_Y6_N202 -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X269_Y6_N202 -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X365_Y6_N202 -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X323_Y6_N202 -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X404_Y6_N202 -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X258_Y6_N202 -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X350_Y6_N202 -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X296_Y6_N202 -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCINITIATOR_X376_Y6_N202 -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0
+set_location_assignment NOCTARGET_X204_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X231_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch0_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X215_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X242_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch1_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X194_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X221_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch2_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X210_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X237_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch3_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X269_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X296_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch4_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X285_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X312_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch5_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X264_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X291_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch6_u1|target_0.target_inst_0
+set_location_assignment NOCTARGET_X275_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u0|target_0.target_inst_0
+set_location_assignment NOCTARGET_X302_Y6_N200 -to u7_hbm2_lower_test|uut|hbm_fp_0|tniu_ch7_u1|target_0.target_inst_0
+
+set_instance_assignment -name PLACE_REGION "X117 Y6 X134 Y36" -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_0 -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X117 Y6 X134 Y36" -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_0 -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X117 Y6 X134 Y36" -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_0 -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X117 Y6 X134 Y36" -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_0 -to u7_hbm2_lower_test|u0_ch0_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X185 Y6 X202 Y36" -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_1 -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X185 Y6 X202 Y36" -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_1 -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X185 Y6 X202 Y36" -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_1 -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X185 Y6 X202 Y36" -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_1 -to u7_hbm2_lower_test|u1_ch0_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X151 Y6 X168 Y36" -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_2 -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X151 Y6 X168 Y36" -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_2 -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X151 Y6 X168 Y36" -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_2 -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X151 Y6 X168 Y36" -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_2 -to u7_hbm2_lower_test|u2_ch1_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X226 Y6 X243 Y36" -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_3 -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X226 Y6 X243 Y36" -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_3 -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X226 Y6 X243 Y36" -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_3 -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X226 Y6 X243 Y36" -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_3 -to u7_hbm2_lower_test|u3_ch1_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X99 Y6 X116 Y36" -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_4 -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X99 Y6 X116 Y36" -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_4 -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X99 Y6 X116 Y36" -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_4 -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X99 Y6 X116 Y36" -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_4 -to u7_hbm2_lower_test|u4_ch2_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X172 Y6 X189 Y36" -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_5 -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X172 Y6 X189 Y36" -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_5 -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X172 Y6 X189 Y36" -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_5 -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X172 Y6 X189 Y36" -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_5 -to u7_hbm2_lower_test|u5_ch2_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X131 Y6 X148 Y36" -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_6 -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X131 Y6 X148 Y36" -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_6 -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X131 Y6 X148 Y36" -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_6 -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X131 Y6 X148 Y36" -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_6 -to u7_hbm2_lower_test|u6_ch3_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X206 Y6 X224 Y36" -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_7 -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X206 Y6 X224 Y36" -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_7 -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X206 Y6 X224 Y36" -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_7 -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X206 Y6 X224 Y36" -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_7 -to u7_hbm2_lower_test|u7_ch3_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X260 Y6 X277 Y36" -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_8 -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X260 Y6 X277 Y36" -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_8 -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X260 Y6 X277 Y36" -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_8 -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X260 Y6 X277 Y36" -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_8 -to u7_hbm2_lower_test|u8_ch4_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X346 Y6 X363 Y36" -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_9 -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X346 Y6 X363 Y36" -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_9 -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X346 Y6 X363 Y36" -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_9 -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X346 Y6 X363 Y36" -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_9 -to u7_hbm2_lower_test|u9_ch4_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X313 Y6 X331 Y36" -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_10 -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X313 Y6 X331 Y36" -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_10 -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X313 Y6 X331 Y36" -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_10 -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X313 Y6 X331 Y36" -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_10 -to u7_hbm2_lower_test|u10_ch5_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X388 Y6 X405 Y36" -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_11 -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X388 Y6 X405 Y36" -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_11 -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X388 Y6 X405 Y36" -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_11 -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X388 Y6 X405 Y36" -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_11 -to u7_hbm2_lower_test|u11_ch5_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X239 Y6 X256 Y36" -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_12 -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X239 Y6 X256 Y36" -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_12 -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X239 Y6 X256 Y36" -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_12 -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X239 Y6 X256 Y36" -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_12 -to u7_hbm2_lower_test|u12_ch6_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X334 Y6 X351 Y36" -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_13 -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X334 Y6 X351 Y36" -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_13 -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X334 Y6 X351 Y36" -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_13 -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X334 Y6 X351 Y36" -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_13 -to u7_hbm2_lower_test|u13_ch6_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X280 Y6 X297 Y36" -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_14 -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X280 Y6 X297 Y36" -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_14 -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X280 Y6 X297 Y36" -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_14 -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X280 Y6 X297 Y36" -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_14 -to u7_hbm2_lower_test|u14_ch7_0|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+set_instance_assignment -name PLACE_REGION "X367 Y6 X384 Y36" -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name REGION_NAME lower_noc_init_15 -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|iniu_0|gen_unoc_ram.gen_unoc_group[0].gen_unoc_subgroup[0].u_tennm_unoc_ram_group
+set_instance_assignment -name PLACE_REGION "X367 Y6 X384 Y36" -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_15 -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|ro_wo_converter_0
+set_instance_assignment -name PLACE_REGION "X367 Y6 X384 Y36" -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_15 -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|unoc_adapter_0
+set_instance_assignment -name PLACE_REGION "X367 Y6 X384 Y36" -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name RESERVE_PLACE_REGION OFF -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name CORE_ONLY_PLACE_REGION ON -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+set_instance_assignment -name REGION_NAME lower_noc_init_15 -to u7_hbm2_lower_test|u15_ch7_1|g1_initiator576.u1_noc_initiator|intel_noc_initiator_0|user_adapter_0
+
+# HPS DDR4 SDRAM
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u14_hps_dram_test|u1_calibration_polling|u0_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|io0.calip_0|cal_0|gen_tniu.tniu|tniu|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_GROUP UPPER_HBM -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|t0.tniu_0|tniu_0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u14_hps_dram_test|u1_calibration_polling|u0_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|io0.calip_0|cal_0|gen_tniu.tniu|tniu|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_CONNECTION ON -from u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|t0.tniu_0|tniu_0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|t0.tniu_0|tniu_0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_TARGET_BASE_ADDRESS 0X00000000000 -from u14_hps_dram_test|u1_calibration_polling|u0_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|io0.calip_0|cal_0|gen_tniu.tniu|tniu|target_0.target_lite_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_BANDWIDTH 4.96 -from u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|t0.tniu_0|tniu_0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_BANDWIDTH 4.96 -from u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|t0.tniu_0|tniu_0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_READ_TRANSACTION_SIZE 32 -from u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|t0.tniu_0|tniu_0|target_0.target_inst_0 -entity cardtest_top
+set_instance_assignment -name NOC_WRITE_TRANSACTION_SIZE 32 -from u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0 -to u14_hps_dram_test|uut|emif_io96b_ddr4comp_0|t0.tniu_0|tniu_0|target_0.target_inst_0 -entity cardtest_top
+set_location_assignment NOCINITIATOR_X365_Y417_N204 -to {u14_hps_dram_test|u0_mem_test|g1_initiator256.u1_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0}
+set_location_assignment NOCINITIATOR_X27_Y417_N202 -to {u14_hps_dram_test|u1_calibration_polling|u0_noc_initiator|intel_noc_initiator_0|iniu_0|initiator_inst_0} 
+
+# sdc that is after all IP inclusion
+set_global_assignment -name SDC_FILE timing_files/cardtest01_post.sdc
+
+set_instance_assignment -name PARTITION_COLOUR 4284269567 -to cardtest_top -entity cardtest_top
+set_instance_assignment -name PARTITION_COLOUR 4287168332 -to auto_fab_0 -entity cardtest_top
+
+set_global_assignment -name QIP_FILE support_logic/cardtest01_bbrev4_std_auto_tiles.qip -comment "This order dependent setting should appear after all other QIP_FILE and IP_FILE settings" -tag quartus_tlg
+set_global_assignment -name SPD_FILE support_logic/cardtest01_bbrev4_std_auto_tiles.spd -tag quartus_tlg

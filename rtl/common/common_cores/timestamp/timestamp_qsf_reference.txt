@@ -1,0 +1,2 @@
+set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:timestamp.tcl"
+set_global_assignment -name VHDL_FILE pkg_timestamp.vhd
