@@ -1,0 +1,107 @@
+set_instance_assignment -name NOC_GROUP G -to u002|hbm_noc_initiator|hbm_noc_initiator|iniu_0|initiator_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_GROUP G -to u002|hbm_noc_initiator|hbm_noc_initiator|iniu_1|initiator_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_GROUP G -to u002|hbm_noc_initiator|hbm_noc_initiator|iniu_2|initiator_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_GROUP G -to u002|hbm|hbm|tniu_ch0_u0|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_GROUP G -to u002|hbm|hbm|tniu_ch0_u1|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_GROUP G -to u002|intel_noc_clock_ctrl_0|intel_noc_clock_ctrl_0|pll_inst -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_GROUP G -to u002|intel_noc_clock_ctrl_0|intel_noc_clock_ctrl_0|ssm_inst -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_CONNECTION ON -from u002|hbm_noc_initiator|hbm_noc_initiator|iniu_0|initiator_inst_0 -to u002|hbm|hbm|tniu_ch0_u0|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_CONNECTION ON -from u002|hbm_noc_initiator|hbm_noc_initiator|iniu_2|initiator_inst_0 -to u002|hbm|hbm|tniu_ch0_u0|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_CONNECTION ON -from u002|hbm_noc_initiator|hbm_noc_initiator|iniu_1|initiator_inst_0 -to u002|hbm|hbm|tniu_ch0_u0|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_CONNECTION ON -from u002|hbm_noc_initiator|hbm_noc_initiator|iniu_1|initiator_inst_0 -to u002|hbm|hbm|tniu_ch0_u1|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_CONNECTION ON -from u002|hbm_noc_initiator|hbm_noc_initiator|iniu_2|initiator_inst_0 -to u002|hbm|hbm|tniu_ch0_u1|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name NOC_CONNECTION ON -from u002|hbm_noc_initiator|hbm_noc_initiator|iniu_0|initiator_inst_0 -to u002|hbm|hbm|tniu_ch0_u1|target_0.target_inst_0 -entity ia860m_golden_top_bbrev4
+
+# --      This source code and its derivatives may not be distributed to
+# --      third parties in source code form. Software including or derived
+# --      from this source code, including derivative works thereof created
+# --      by Licensee, may be distributed to third parties with BittWare
+# --      hardware only and in executable form only.
+# --
+# --      The click-through license is available here:
+# --        https://developer.bittware.com/software_license.txt
+# --
+# ------------------------------------------------------------------------------ #
+# --      UNCLASSIFIED//FOR OFFICIAL USE ONLY
+# ------------------------------------------------------------------------------ #
+# -- Title       : IA-860m Golden Top qsf
+# -- Project     : IA-860m
+# ------------------------------------------------------------------------------ #
+# -- Description : QSF for IA-860m Golden Top Project
+# --               Reference project that contains the FPGA pins, associated I/O
+# --               constraints and required Quartus settings
+# ------------------------------------------------------------------------------ #
+# -- Known Issues and Omissions:
+# -- None
+# ------------------------------------------------------------------------------ #
+
+set_global_assignment -name LAST_QUARTUS_VERSION "25.1.0 Pro Edition"
+set_global_assignment -name TOP_LEVEL_ENTITY ia860m_golden_top_bbrev4
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+
+source ia860m_golden_top_bbrev4.tcl
+
+# Uncomment the preferred top level for your design and comment the other.
+set_global_assignment -name VERILOG_FILE rtl/reset_filter.v
+set_global_assignment -name VHDL_FILE rtl/pwr_on_rst_init_dist.vhd
+set_global_assignment -name VHDL_FILE rtl/reset_synchroniser.vhd
+set_global_assignment -name VHDL_FILE rtl/glitch_filter.vhd
+set_global_assignment -name VHDL_FILE rtl/pkg_global.vhd
+set_global_assignment -name VHDL_FILE rtl/reset_top.vhd
+set_global_assignment -name VERILOG_FILE ia860m_golden_top_bbrev4.v
+set_global_assignment -name TCL_SCRIPT_FILE ia860m_golden_top_bbrev4.tcl
+set_global_assignment -name QSYS_FILE qsys/platform.qsys
+set_global_assignment -name SOURCE_FILE ia860m_golden_top_bbrev4.qsf
+set_global_assignment -name SDC_FILE ia860m_golden_top_bbrev4.sdc
+#set_global_assignment -name VHDL_FILE ia860m_golden_top_bbrev4.vhd
+
+set_global_assignment -name AUTO_RESERVE_CLKUSR_FOR_CALIBRATION OFF
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_intel_noc_initiator_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_hbm_fp_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_intel_agilex_hps_1.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_clock_bridge_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_clock_bridge_1.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_clock_bridge_2.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_intel_pcie_axi_mcdma_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_intel_rtile_pcie_ast_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_intel_pcie_ss_axi_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_reset_bridge_2.ip
+set_global_assignment -name FAMILY "Agilex 7"
+set_global_assignment -name DEVICE AGMF039R47A1E2VR0
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_address_span_extender_2.ip
+set_global_assignment -name FLOW_DISABLE_ASSEMBLER OFF
+set_global_assignment -name BOARD default
+
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_intel_noc_clock_ctrl_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_clock_bridge_3.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_clock_bridge_4.ip
+set_global_assignment -name FLOW_ENABLE_EARLY_TIMING_ANALYSIS OFF
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_intel_pcie_rtile_mcdma_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_mm_ccb_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_mm_ccb_1.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_iopll_0.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_reset_bridge_0.ip
+set_instance_assignment -name IO_STANDARD "1.2-V" -to HBM_CATTRIP0
+set_instance_assignment -name SLEW_RATE 0 -to HBM_CATTRIP0
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to HBM_CATTRIP0
+set_instance_assignment -name IO_STANDARD "1.2-V" -to HBM_TEMP0[0]
+set_instance_assignment -name SLEW_RATE 0 -to HBM_TEMP0[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to HBM_TEMP0[0]
+set_instance_assignment -name IO_STANDARD "1.2-V" -to HBM_TEMP0[1]
+set_instance_assignment -name SLEW_RATE 0 -to HBM_TEMP0[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to HBM_TEMP0[1]
+set_instance_assignment -name IO_STANDARD "1.2-V" -to HBM_TEMP0[2]
+set_instance_assignment -name SLEW_RATE 0 -to HBM_TEMP0[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to HBM_TEMP0[2]
+set_global_assignment -name IP_FILE ip/user_clk0_pll.ip
+set_global_assignment -name IP_FILE ip/reset_release.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_reset_bridge_1.ip
+set_global_assignment -name IP_FILE qsys/ip/platform/platform_clock_bridge_5.ip
+set_instance_assignment -name SLEW_RATE 0 -to MCIO_GPIO_EN_L -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to MCIO_GPIO_EN_L -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name SLEW_RATE 0 -to MCIO_I2C_EN -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to MCIO_I2C_EN -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name SLEW_RATE 0 -to EXT_GPIO_EN_L -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to EXT_GPIO_EN_L -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name SLEW_RATE 0 -to BMC_IF_PRESENT_L -entity ia860m_golden_top_bbrev4
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to BMC_IF_PRESENT_L -entity ia860m_golden_top_bbrev4
